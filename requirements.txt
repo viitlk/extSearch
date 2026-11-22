@@ -1,0 +1,14 @@
+# Core: HTTP with TLS impersonation and HTML parsing
+curl_cffi>=0.7
+beautifulsoup4>=4.12
+
+# MCP server (extsearch-mcp)
+mcp>=2.0
+
+# HTTP API (extsearch-api)
+fastapi>=0.110
+uvicorn>=0.30
+
+# Rozetka search needs a real browser (optional)
+# playwright>=1.40
+# playwright install chromium

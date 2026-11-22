@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "extsearch"
+version = "2.0.0"
+description = "Product search across marketplaces of many countries: library, MCP server and HTTP API"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "viitlk" }]
+keywords = ["marketplaces", "scraping", "search", "mcp", "prices", "olx", "amazon"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "curl_cffi>=0.7",
+    "beautifulsoup4>=4.12",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=2.0"]
+api = ["fastapi>=0.110", "uvicorn>=0.30"]
+browser = ["playwright>=1.40"]
+all = ["mcp>=2.0", "fastapi>=0.110", "uvicorn>=0.30", "playwright>=1.40"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+extsearch = "extsearch.cli:main"
+extsearch-mcp = "extsearch.mcp_server:main"
+extsearch-api = "extsearch.api:main"
+
+[project.urls]
+Homepage = "https://github.com/viitlk/extSearch"
+Issues = "https://github.com/viitlk/extSearch/issues"
+
+[tool.setuptools.packages.find]
+include = ["extsearch*"]
+
+[tool.setuptools.package-data]
+extsearch = ["junk_words.txt"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

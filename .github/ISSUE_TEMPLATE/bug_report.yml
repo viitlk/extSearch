@@ -1,0 +1,62 @@
+name: Bug report
+description: A marketplace parser broke, or a search returns wrong data
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Parser bugs are expected — marketplaces change markup.
+        One screenshot or pasted output saves three questions.
+  - type: input
+    id: marketplace
+    attributes:
+      label: Marketplace
+      description: Which source, e.g. `olx_pl`, `amazon_de`, `yandex_market`
+      placeholder: olx_pl
+    validations:
+      required: true
+  - type: input
+    id: query
+    attributes:
+      label: Query and `where`
+      description: What you searched and with which parameters
+      placeholder: 'search("usb microphone", where="ua,pl")'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: For example "20 items with prices" or "price should be 1999, not None"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What you got
+      description: The error code, or the wrong rows. Paste JSON if it fits.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: selftest
+    attributes:
+      label: Output of `python tools/test.py`
+      description: One screen, real requests. It shows which sources answer and which do not.
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Version and platform
+      description: '`python -c "import extsearch, platform; print(extsearch.__version__, platform.platform())"`'
+      placeholder: 2.0.0 Linux-6.12-x86_64
+    validations:
+      required: true
+  - type: checkboxes
+    id: proxy
+    attributes:
+      label: Proxy
+      options:
+        - label: I am using a proxy for sources marked `needs_proxy`

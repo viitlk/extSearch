@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/viitlk/extSearch/blob/main/docs/index.md
+    about: Library, HTTP API, MCP server, architecture, troubleshooting
+  - name: Adding a marketplace
+    url: https://github.com/viitlk/extSearch/blob/main/docs/adding-a-marketplace.md
+    about: Step-by-step guide with a real example

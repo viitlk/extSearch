@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Local data: never commit sessions, keys, browser profiles or probe dumps
+.env
+*.session
+*.string
+*.json.bak
+.probe/
+logs/
+*.log
+
+# Test/cache output
+.pytest_cache/
+.ruff_cache/
+.cache/
