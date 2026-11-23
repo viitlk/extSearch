@@ -103,7 +103,7 @@ async def _fetch(url: str, params: dict[str, Any] | None = None, *,
             await asyncio.sleep(1.5 * (attempt + 1))
             continue
 
-        if resp.status_code in (401, 403) and chrome:
+        if resp.status_code in (401, 403, 423) and chrome:
             # The TLS fingerprint is the first suspect. One Safari attempt is
             # cheaper than reporting the whole shop as blocked.
             await _throttle()
@@ -117,7 +117,7 @@ async def _fetch(url: str, params: dict[str, Any] | None = None, *,
 
         if resp.status_code == 404:
             raise OlxError("not_found", "page not found")
-        if resp.status_code in (401, 403):
+        if resp.status_code in (401, 403, 423):
             raise OlxError(
                 "blocked",
                 f"{urllib.parse.urlsplit(url).hostname} blocked the request (HTTP 403). "
