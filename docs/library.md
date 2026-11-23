@@ -113,6 +113,42 @@ async def main():
 asyncio.run(main())
 ```
 
+## `compare()`
+
+```python
+await compare(query: str, *, where="all", limit=10, page=1, price_min=None,
+              price_max=None, min_rating=None, sort="relevance", strict=False,
+              proxies=None, timeout=None, progress=None) -> dict
+```
+
+Groups equal products across marketplaces and sorts them by the cheapest offer.
+One search returns 50+ rows; the same product appears several times, once per
+shop. `compare` normalises titles, drops accessories (junk filter is always on
+here) and rows that do not mention a distinctive query token, then groups.
+
+```python
+res = await compare("iphone 15", where="ua")
+for group in res["groups"]:
+    print(group["best"]["price"], group["best"]["source"], group["title"])
+    for offer in group["offers"][1:]:
+        print("   also", offer["price"], offer["source"], "savings", group.get("savings"))
+```
+
+```json
+{
+  "key": "jbl tune 720bt",
+  "title": "Навушники JBL Tune 720BT Black",
+  "sources": 3,
+  "savings": 800,
+  "best": {"source": "brain", "price": 2399, "url": "..."},
+  "offers": [{"source": "brain", ...}, {"source": "comfy", ...}]
+}
+```
+
+`groups` is capped at `limit`; `items` tells how many rows went in, `sources` is
+the per-marketplace status. The callback and the proxy options are the same as
+in `search`.
+
 ## `select()`
 
 ```python

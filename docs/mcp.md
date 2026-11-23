@@ -84,6 +84,7 @@ point the client at the URL.
 | Tool | Kind | Purpose |
 |---|---|---|
 | `marketplace_search` | async | search across countries and marketplaces |
+| `marketplace_compare` | async | same product across sources, best price first |
 | `marketplace_select` | async | product card by `source:id` |
 | `marketplace_catalog` | sync | countries, marketplaces, flags |
 | `configure_proxies` | sync | set or clear the proxy pool |

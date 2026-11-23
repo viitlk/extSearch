@@ -22,6 +22,7 @@ Interactive docs: `GET /docs`. Raw schema: `GET /openapi.json`.
 | GET | `/search/stream` | same search, streamed as Server-Sent Events with progress |
 | POST | `/search` | search with a JSON body |
 | GET | `/item/{item_id}` | product card |
+| GET | `/compare` | same product across marketplaces, best price first |
 | GET | `/proxies` | current pool state |
 | POST | `/proxies` | replace the pool |
 | GET | `/web/search` | web search |
@@ -137,6 +138,15 @@ Body fields: `query`, `where`, `limit`, `page`, `price_min`, `price_max`,
 `proxies` in the body **replaces** the process pool, it is not a per-request
 override. To scope it, send the pool you want on the first call and reset it
 with `{"proxies": null}`.
+
+## `GET /compare`
+
+```bash
+curl "127.0.0.1:8000/compare?q=iphone%2015&where=ua&limit=5"
+```
+
+Groups equal products across sources and sorts them by the cheapest offer. Each
+group carries `best`, `offers[]`, `sources` and `savings`.
 
 ## `GET /item/{item_id}`
 

@@ -15,6 +15,7 @@ Entry points (see pyproject): ``extsearch`` (CLI), ``extsearch-mcp``
 
 from __future__ import annotations
 
+from .compare import compare
 from .config import __version__
 from .errors import ExtSearchError, OlxError
 from .marketplaces import REGISTRY, by_country, catalog, resolve
@@ -32,6 +33,7 @@ __all__ = [
     "__version__",
     "by_country",
     "catalog",
+    "compare",
     "freelance_search",
     "get_pool",
     "mod_search",

@@ -25,6 +25,7 @@ except ImportError as exc:  # pragma: no cover - depends on the install extras
         f"(missing: {exc.name})"
     ) from None
 
+from .compare import compare
 from .config import __version__
 from .errors import ExtSearchError
 from .media import freelance_search, mod_search, video_search
@@ -180,6 +181,19 @@ async def search_post(body: SearchBody) -> dict[str, Any]:
             details=body.details, per_source_limit=body.per_source_limit,
             free_only=body.free_only, proxies=body.proxies,
         )
+    except ExtSearchError as exc:
+        raise _fail(exc) from None
+
+
+@app.get("/compare")
+async def compare_ep(q: str = Query(..., min_length=1), where: str = "all",
+                     limit: int = Query(10, ge=1, le=30),
+                     price_min: float | None = None,
+                     price_max: float | None = None) -> dict[str, Any]:
+    """Same product across marketplaces, best price first."""
+    try:
+        return await compare(q, where=where, limit=limit,
+                             price_min=price_min, price_max=price_max)
     except ExtSearchError as exc:
         raise _fail(exc) from None
 

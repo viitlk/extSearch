@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from extsearch import REGISTRY, ExtSearchError, freelance_search, parse_proxies, resolve
+from extsearch import REGISTRY, ExtSearchError, compare, freelance_search, parse_proxies, resolve
 from extsearch.marketplaces.adapters import money
 from extsearch.search import search, select, sources_catalog
 
@@ -90,6 +90,9 @@ async def test_network() -> None:
            if "fifine" not in (row.get("title") or "").lower()]
     check("price sort: brand in title", not off,
           f"{len(off)} rows without the brand")
+
+    cmp_res = await compare("iphone 15", where="ua", limit=3)
+    check("compare groups", cmp_res["grouped"] > 0, f'{cmp_res["grouped"]} groups')
 
     freel = await freelance_search("aiogram", boards="kwork", limit=2)
     check("freelance_search", bool(freel.get("results")),

@@ -123,6 +123,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--progress", action="store_true",
                    help="live progress bar on stderr")
 
+    p = sub.add_parser("compare", help="same product across sources, best price first")
+    p.add_argument("query")
+    p.add_argument("-w", "--where", default="all")
+    p.add_argument("-n", "--limit", type=int, default=10)
+    p.add_argument("--min-price", type=float)
+    p.add_argument("--max-price", type=float)
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--progress", action="store_true")
+
     p = sub.add_parser("select", help="product card by id")
     p.add_argument("item_id")
     p.add_argument("--chars", type=int, default=600)
@@ -212,6 +221,26 @@ def run(argv: list[str] | None = None) -> int:
                 _print(result, True)
             else:
                 _print_items(result)
+            return 0
+        if args.command == "compare":
+            from .compare import compare
+            result = asyncio.run(compare(
+                args.query, where=args.where, limit=args.limit,
+                price_min=args.min_price, price_max=args.max_price,
+                progress=_progress_printer() if args.progress else None,
+            ))
+            if args.json:
+                _print(result, True)
+            else:
+                for group in result["groups"]:
+                    best = group["best"]
+                    others = " / ".join(f'{o["source"]} {o["price"]}'
+                                        for o in group["offers"][1:4])
+                    saving = f' (saves {group.get("savings")})' if group.get("savings") else ""
+                    print(f'{_money(best.get("price"), best.get("currency")):>14}  '
+                          f'{best["title"][:58]}')
+                    if others:
+                        print(f'{"":>14}  also: {others}{saving}')
             return 0
         if args.command == "select":
             _print(asyncio.run(select(args.item_id, args.chars)), True)

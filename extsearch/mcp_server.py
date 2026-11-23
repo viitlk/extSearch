@@ -26,6 +26,7 @@ except ImportError:  # pragma: no cover - mcp 1.x
             f"(missing: {exc.name})"
         ) from None
 
+from .compare import compare as _compare
 from .errors import ExtSearchError
 from .media import FREELANCE_BOARDS
 from .media import freelance_search as _freelance
@@ -98,6 +99,33 @@ async def marketplace_search(
             junk_filter=junk_filter, include_urls=include_urls, details=details,
             per_source_limit=per_source_limit, free_only=free_only, proxies=proxies,
         )
+    except ExtSearchError as exc:
+        return exc.as_dict()
+
+
+@mcp.tool()
+async def marketplace_compare(
+    query: str,
+    where: str = "all",
+    limit: int = 10,
+    price_min: float | None = None,
+    price_max: float | None = None,
+) -> dict[str, Any]:
+    """Find the same product on several marketplaces and rank it by the best price.
+
+    Groups equal titles across sources and returns groups sorted by the cheapest
+    offer. Each group has `best` (cheapest offer), `offers` (all of them) and
+    `savings` (difference to the most expensive). Use it for "where is it cheapest".
+
+    Args:
+        query: what to look for.
+        where: countries and/or marketplaces, same syntax as marketplace_search.
+        limit: how many groups to return.
+        price_min / price_max: price bounds in the item currency.
+    """
+    try:
+        return await _compare(query, where=where, limit=limit,
+                              price_min=price_min, price_max=price_max)
     except ExtSearchError as exc:
         return exc.as_dict()
 
