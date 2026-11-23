@@ -1,0 +1,22 @@
+pkgbase = python-extsearch
+	pkgdesc = Product search across marketplaces of many countries: library, MCP server and HTTP API
+	pkgver = 2.1.0
+	pkgrel = 1
+	url = https://github.com/viitlk/extSearch
+	arch = any
+	license = MIT
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-wheel
+	makedepends = python-setuptools
+	depends = python
+	depends = python-beautifulsoup4
+	depends = python-curl-cffi
+	optdepends = python-mcp: MCP server (extsearch-mcp)
+	optdepends = python-fastapi: HTTP API (extsearch-api)
+	optdepends = python-uvicorn: HTTP API server (extsearch-api)
+	optdepends = python-playwright: Rozetka search and product cards
+	source = python-extsearch-2.1.0.tar.gz::https://github.com/viitlk/extSearch/archive/v2.1.0.tar.gz
+	sha256sums = c19ffcf41275721185673fb3cb681cd2e9e9a1ec2fa09a3d46ea319773de951f
+
+pkgname = python-extsearch
