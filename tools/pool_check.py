@@ -23,9 +23,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from curl_cffi import requests as cffi  # noqa: E402
+from curl_cffi import requests as cffi
 
-from extsearch.pools import collect  # noqa: E402
+from extsearch.pools import collect
 
 CHECK_URL = "http://cp.cloudflare.com/generate_204"
 GEO_URL = "http://ip-api.com/json/{ip}?fields=status,countryCode"
@@ -38,7 +38,7 @@ async def _exit_ip(proxy: str, timeout: float) -> str | None:
                                   proxies={"http": proxy, "https": proxy})
             if r.status_code == 200:
                 return r.json().get("ip")
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
     return None
 
@@ -52,7 +52,7 @@ async def _check(proxy: str, timeout: float, geo: bool, sem: asyncio.Semaphore) 
             if r.status_code not in (200, 204):
                 return None
             latency = int((time.monotonic() - started) * 1000)
-        except Exception:  # noqa: BLE001
+        except Exception:
             return None
 
     out = {"proxy": proxy, "latency_ms": latency}
@@ -66,7 +66,7 @@ async def _check(proxy: str, timeout: float, geo: bool, sem: asyncio.Semaphore) 
                     data = g.json()
                     if data.get("status") == "success":
                         out["country"] = data.get("countryCode")
-            except Exception:  # noqa: BLE001
+            except Exception:
                 pass
     return out
 
