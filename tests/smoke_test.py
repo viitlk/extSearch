@@ -80,6 +80,17 @@ async def test_network() -> None:
               and "message" in payload and "retryable" in payload,
               f'{payload["error"]}: {payload["message"][:50]}')
 
+    cheap = await search("fifine", where="ua", sort="cheapest", limit=8,
+                         per_source_limit=10)
+    zero = [row for row in cheap["items"]
+            if (row.get("price") or 0) == 0 and not row.get("free")]
+    check("price sort: no zero-price rows", not zero, f"{len(zero)} rows with price 0")
+
+    off = [row for row in cheap["items"]
+           if "fifine" not in (row.get("title") or "").lower()]
+    check("price sort: brand in title", not off,
+          f"{len(off)} rows without the brand")
+
     from extsearch.web import web_get, web_search
 
     docs = await web_search("python asyncio gather", limit=3)
