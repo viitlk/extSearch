@@ -7,6 +7,7 @@ name = "extsearch"
 version = "2.0.0"
 description = "Product search across marketplaces of many countries: library, MCP server and HTTP API"
 requires-python = ">=3.10"
+readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "viitlk" }]
 keywords = ["marketplaces", "scraping", "search", "mcp", "prices", "olx", "amazon"]

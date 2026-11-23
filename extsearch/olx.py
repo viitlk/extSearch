@@ -361,6 +361,10 @@ def _normalize_item(item: dict[str, Any], query: str,
     price, currency, negotiable, is_free = _extract_price(item)
     location = item.get("location") or {}
     city = (location.get("city") or {}).get("name")
+    # A zero without the free marker means "negotiable": such rows must not
+    # rank first in a cheapest sort.
+    if price == 0 and not is_free:
+        price = None
     out: dict[str, Any] = {
         "id": item.get("id"),
         "title": _clean_text(item.get("title") or ""),
@@ -443,6 +447,9 @@ def _embedded_state(ad: dict[str, Any]) -> str | None:
 def _normalize_embedded(ad: dict[str, Any], query: str,
                         include_urls: bool) -> dict[str, Any]:
     price, currency, negotiable, _ = _embedded_price(ad)
+    # Same rule as the API path: a bare zero means "negotiable".
+    if price == 0 and not (ad.get("price") or {}).get("free"):
+        price = None
     location = ad.get("location") or {}
     title = _clean_text(ad.get("title") or "")
     out: dict[str, Any] = {

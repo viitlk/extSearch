@@ -8,6 +8,7 @@ status codes by the facades.
 from __future__ import annotations
 
 import asyncio
+import re
 from typing import Any, Literal
 
 from .config import to_usd
@@ -23,6 +24,21 @@ SORTS = ("relevance", "newest", "cheapest", "expensive",
          "rating", "rating_asc", "reviews", "reviews_asc", "discount")
 
 LOCAL_SORTS = ("rating", "rating_asc", "reviews", "reviews_asc", "discount")
+
+# Words that appear in titles of every category: a boom arm "for a microphone"
+# is not a microphone. Price sorting must not treat them as a match.
+GENERIC_WORDS = {
+    "для", "под", "про", "the", "and", "with", "for",
+    "microphone", "мікрофон", "микрофон", "mic",
+    "phone", "телефон", "смартфон", "камера", "camera",
+    "навушники", "наушники", "headphones", "кабель", "cable",
+}
+
+
+def _core_tokens(query: str) -> list[str]:
+    """Distinctive words of the query: long enough and not a category name."""
+    words = re.findall(r"[0-9a-zа-яіїєґё]{4,}", (query or "").lower())
+    return [word for word in words if word not in GENERIC_WORDS]
 
 
 def _rank(rows: list[dict[str, Any]], sort: str) -> list[dict[str, Any]]:
@@ -233,6 +249,30 @@ async def search(
         merged = [row for row in merged if not _is_junk(row.get("title") or "")]
         if before != len(merged):
             notes.append(f"junk_filter: removed {before - len(merged)} accessories")
+
+    # Price sorting looks at the number only, so anything that merely shares a
+    # generic word with the query wins: a boom arm "for a microphone", a webcam
+    # "with a microphone", a cosmetic sponge from a shop whose own search matched
+    # something else. Keep rows that mention a distinctive query token (brand or
+    # model); fall back to the plain relevance floor when the query has none.
+    if sort in ("cheapest", "expensive", "discount"):
+        core = _core_tokens(query)
+        if core:
+            kept = [row for row in merged
+                    if any(token in (row.get("title") or "").lower() for token in core)]
+            if kept:
+                dropped = len(merged) - len(kept)
+                if dropped:
+                    notes.append(f"sort={sort}: dropped {dropped} rows without "
+                                 f"{', '.join(core[:2])!r} in the title")
+                merged = kept
+        else:
+            kept = [row for row in merged if (row.get("relevance") or 0) > 0]
+            dropped = len(merged) - len(kept)
+            if dropped:
+                notes.append(f"sort={sort}: dropped {dropped} rows with no query word "
+                             "in the title")
+            merged = kept
 
     result: dict[str, Any] = {
         "query": query,
