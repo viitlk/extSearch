@@ -19,8 +19,8 @@ register(Marketplace(
                        lambda q, limit, page: amazon_search("com", q, limit=limit, page=page)),
     get=simple_get(lambda oid, max_description_chars=600:
                    amazon_get("com", str(oid), max_description_chars)),
-    verified=False, needs_proxy=True,
-    note="parser verified on amazon.de; amazon.com serves a captcha without a proxy",
+    verified=True, needs_proxy=False,
+    note="parser verified on amazon.com; EU domains answer with an AWS WAF challenge",
 ))
 
 register(Marketplace(

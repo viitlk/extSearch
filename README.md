@@ -98,10 +98,17 @@ per marketplace:
 | `default` | included in `all` and in country-wide searches |
 | `can_get` | product cards (`select`) supported |
 
-Verified: OLX (ua, pl, ro, bg, pt, kz, uz), prom, foxtrot, comfy, allo, moyo,
-kasta, brain, ctrs, bigl, epicentr, makeup, auto.ria, yandex_market, rakuten,
-aliexpress, amazon.de, plus Rozetka's product API.
-Rozetka **search** needs a warmed browser profile: `python tools/warmup_rozetka.py`.
+26 of 39 adapters are verified from a normal connection: OLX (ua, pl, ro, bg, pt,
+kz, uz), prom, foxtrot, comfy, allo, moyo, kasta, brain, ctrs, bigl, epicentr,
+makeup, shafa, auto.ria, yandex_market, rakuten, aliexpress, amazon.com, plus
+Rozetka's product API.
+
+The rest answer `403`/`444` or an AWS WAF challenge without a regional proxy and are
+reported as `blocked`, not as an empty result set:
+
+- Rozetka **search** needs a warmed browser profile: `python tools/warmup_rozetka.py`
+- amazon.co.uk / .fr / .it / .es serve a WAF challenge; amazon.de is rate limited
+  after a burst of requests
 
 ---
 

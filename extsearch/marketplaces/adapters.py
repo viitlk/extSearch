@@ -20,7 +20,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 from ..catalog import _finish, _int_from, _relevance, _remember
-from ..errors import ExtSearchError
+from ..errors import HINT_PROXY, ExtSearchError
 from ..net import fetch_json, fetch_text
 
 _MONEY_AFTER = re.compile(
@@ -73,6 +73,20 @@ def money(text: str | None) -> tuple[int | None, str | None]:
 # --------------------------------------------------------------------------
 # Amazon (com / de / co.uk / fr / it / es): one markup for every domain
 # --------------------------------------------------------------------------
+
+# Amazon answers a bot challenge with a tiny page instead of products. Returning
+# an empty list there is misleading: the parser is fine, the request was refused.
+_WAF_MARKERS = (
+    "window.gokuProps",
+    "awsWafCookieDomainList",
+    "/errors/validateCaptcha",
+    "Enter the characters you see below",
+)
+
+
+def _looks_blocked(html: str) -> bool:
+    return any(marker in html for marker in _WAF_MARKERS)
+
 
 AMAZON_CURRENCY = {
     "com": "USD", "de": "EUR", "co.uk": "GBP", "fr": "EUR",
@@ -137,6 +151,13 @@ async def amazon_search(domain: str, query: str, limit: int = 10,
                     pass
         rows.append(row)
 
+    if not rows and _looks_blocked(html):
+        raise ExtSearchError(
+            "blocked",
+            f"amazon.{domain} served a bot challenge instead of results",
+            hint=HINT_PROXY,
+            source=f"amazon.{domain}",
+        )
     return rows[: max(limit * 2, 20)]
 
 

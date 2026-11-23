@@ -10,7 +10,7 @@ import json
 import os
 from pathlib import Path
 
-__version__ = "2.0.4"
+__version__ = "2.0.5"
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 
