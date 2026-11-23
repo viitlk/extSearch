@@ -1,8 +1,10 @@
 name: publish
 
+# Publishing is deliberate: a tag alone changes nothing on PyPI.
+# Create a GitHub Release (which creates the tag) or run this workflow by hand.
 on:
-  push:
-    tags: ["v*"]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:

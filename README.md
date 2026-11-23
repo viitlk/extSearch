@@ -469,6 +469,23 @@ Adding a marketplace takes one file plus one registry line:
 
 Pull requests with a real example response (minus personal data) are welcome.
 
+### Branching and releases
+
+| Branch | Purpose |
+|---|---|
+| `main` | released code; tag and release are created here |
+| `dev` | integration: small commits, several fixes can pile up before a release |
+
+A release is a decision, not a side effect of pushing a commit:
+
+1. push fixes to `dev`
+2. bump `__version__` in `extsearch/config.py` (the only place the number lives)
+3. `git checkout main && git merge --no-ff dev && git push`
+4. create a GitHub Release with tag `vX.Y.Z` — the workflow builds and publishes to PyPI
+5. attach the wheel and sdist to that release
+
+Tagging alone no longer publishes: the workflow listens for a published release.
+
 ## Getting help
 
 A marketplace changes its markup every few months, so "the parser broke" is a normal
