@@ -17,7 +17,14 @@ from typing import Any, Literal
 try:  # mcp >= 2.0
     from mcp.server.mcpserver import MCPServer as _Server
 except ImportError:  # pragma: no cover - mcp 1.x
-    from mcp.server.fastmcp import FastMCP as _Server
+    try:
+        from mcp.server.fastmcp import FastMCP as _Server
+    except ImportError as exc:
+        raise SystemExit(
+            "extsearch-mcp needs the MCP extra, which is not installed.\n"
+            "Install it with:  pip install 'extsearch[mcp]'\n"
+            f"(missing: {exc.name})"
+        ) from None
 
 from .errors import ExtSearchError
 from .media import FREELANCE_BOARDS, freelance_search as _freelance

@@ -14,8 +14,15 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel, Field
+try:
+    from fastapi import FastAPI, HTTPException, Query
+    from pydantic import BaseModel, Field
+except ImportError as exc:  # pragma: no cover - depends on the install extras
+    raise SystemExit(
+        "extsearch-api needs the API extras, which are not installed.\n"
+        "Install them with:  pip install 'extsearch[api]'\n"
+        f"(missing: {exc.name})"
+    ) from None
 
 from .config import __version__
 from .errors import ExtSearchError

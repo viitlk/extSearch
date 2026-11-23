@@ -2,6 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/extsearch)](https://pypi.org/project/extsearch/)
 [![MCP](https://img.shields.io/badge/MCP-server-blueviolet)](https://modelcontextprotocol.io/)
 
 Product search across marketplaces of many countries. 39 marketplaces in 17
@@ -107,15 +108,19 @@ Rozetka **search** needs a warmed browser profile: `python tools/warmup_rozetka.
 ## Install
 
 ```bash
+pip install extsearch               # library only
+pip install "extsearch[mcp]"        # + MCP server (extsearch-mcp)
+pip install "extsearch[api]"        # + HTTP API (extsearch-api)
+pip install "extsearch[all]"        # everything
+```
+
+From source, for development:
+
+```bash
 git clone https://github.com/viitlk/extSearch
 cd extSearch
-
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-
-pip install -e ".[all]"            # library + MCP + HTTP API
-# or minimal, library only:
-pip install -e .
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[all]"
 ```
 
 Optional browser engine (Rozetka search only):
