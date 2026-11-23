@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from extsearch.config import PROFILE_DIR  # noqa: E402
+from extsearch.config import PROFILE_DIR
 
 HOME = "https://rozetka.com.ua/ua/"
 SEARCH = "https://rozetka.com.ua/ua/search/?text={q}"
@@ -55,7 +55,7 @@ async def main() -> int:
 
         try:
             await page.goto(HOME, wait_until="domcontentloaded", timeout=60000)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             print(f"home page: {exc}")
 
         print(f"waiting for the challenge (up to {args.timeout}s)...")
@@ -72,7 +72,7 @@ async def main() -> int:
         try:
             await page.goto(search_url, wait_until="domcontentloaded", timeout=60000)
             await page.wait_for_selector('a[href*="/p"]', timeout=45000)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             print(f"search page: {exc}")
 
         await page.mouse.wheel(0, 1200)

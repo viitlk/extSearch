@@ -52,6 +52,30 @@ await search(
 | `free_only` | `False` | OLX give-away category, Ukraine only |
 | `proxies` | `None` | replaces the process proxy pool for this and later calls |
 | `timeout` | `None` | per-marketplace timeout in seconds |
+| `progress` | `None` | callback receiving progress events while sources finish |
+
+### Progress while a search runs
+
+`progress` is called with a dict per event. Percent is `done / total`, `found` is
+how many items have been collected so far — that is what a progress bar needs.
+
+```python
+import asyncio
+from extsearch import search
+
+def on_progress(event):
+    if event["event"] == "source":
+        print(f'[{event["percent"]:>3}%] {event["done"]}/{event["total"]} '
+              f'{event["source"]}: {event["status"]} +{event["returned"]} '
+              f'(total {event["found"]})')
+
+asyncio.run(search("навушники", where="ua", progress=on_progress))
+```
+
+Events: `start` (sources list), `source` (one per marketplace, with `status`,
+`returned`, `elapsed_ms`, `percent`, `found`), `done` (final `returned`,
+`elapsed_ms`), `error` (when nothing was found). A callback that raises is
+ignored on purpose: reporting must not break a search.
 
 ### How results are ordered
 

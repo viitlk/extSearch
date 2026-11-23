@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
+from collections.abc import Callable
 from typing import Any, Literal
 
 from .config import to_usd
@@ -88,6 +90,7 @@ async def search(
     free_only: bool = False,
     proxies: str | list[str] | None = None,
     timeout: float | None = None,
+    progress: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
     """Find a product across the marketplaces of the selected countries.
 
@@ -110,6 +113,9 @@ async def search(
         free_only: OLX "give away for free" category (UA only).
         proxies: list of "TYPE://IP:PORT"; replaces the process proxy pool.
         timeout: per-marketplace timeout in seconds.
+        progress: optional callback receiving events while sources finish:
+            {"event": "start"|"source"|"done"|"error", ...}. Percent is
+            done/total; found is the number of items collected so far.
     """
     if proxies is not None:
         set_proxies(proxies)
@@ -134,9 +140,43 @@ async def search(
     if junk_filter is None and sort in ("cheapest", "expensive", "discount"):
         junk_filter = not _query_is_accessory(query)
 
+    started_at = time.monotonic()
+    total_sources = len(wanted)
+    progress_state = {"done": 0, "found": 0}
+
+    def emit(event: dict[str, Any]) -> None:
+        if progress is None:
+            return
+        try:
+            progress(event)
+        except Exception:
+            pass
+
+    emit({"event": "start", "query": query, "sources": list(wanted),
+          "total": total_sources, "percent": 0})
+
+    def _report(mp: Marketplace, status: str, returned: int,
+                error: str | None, source_started: float) -> None:
+        progress_state["done"] += 1
+        progress_state["found"] += returned
+        emit({
+            "event": "source",
+            "source": mp.name,
+            "country": mp.country,
+            "status": status,
+            "returned": returned,
+            "found": progress_state["found"],
+            "done": progress_state["done"],
+            "total": total_sources,
+            "percent": round(progress_state["done"] / max(total_sources, 1) * 100),
+            "elapsed_ms": int((time.monotonic() - source_started) * 1000),
+            **({"error": error} if error else {}),
+        })
+
     async def run_one(
         mp: Marketplace,
     ) -> tuple[str, list[dict[str, Any]], dict[str, Any] | None, ExtSearchError | None]:
+        source_started = time.monotonic()
         try:
             coro = mp.search(
                 query, limit=per_source, page=page,
@@ -149,6 +189,7 @@ async def search(
         except asyncio.TimeoutError:
             err = ExtSearchError("timeout", f"{mp.name}: no answer within {timeout}s",
                                  source=mp.name, country=mp.country)
+            _report(mp, "error", 0, "timeout", source_started)
             return mp.name, [], {"returned": 0, "error": "timeout", "hint": err.message}, err
         except ExtSearchError as exc:
             exc.source = exc.source or mp.name
@@ -156,10 +197,12 @@ async def search(
             info: dict[str, Any] = {"returned": 0, "error": exc.code}
             if exc.hint:
                 info["hint"] = exc.hint
+            _report(mp, "error", 0, exc.code, source_started)
             return mp.name, [], info, exc
         except Exception as exc:
             err = ExtSearchError(type(exc).__name__, f"{mp.name}: {exc}",
                                  source=mp.name, country=mp.country)
+            _report(mp, "error", 0, type(exc).__name__, source_started)
             return mp.name, [], {"returned": 0, "error": type(exc).__name__}, err
 
         items = []
@@ -175,6 +218,7 @@ async def search(
         info = {"returned": len(items), "total": res.get("total")}
         if res.get("notes"):
             info["notes"] = res["notes"]
+        _report(mp, "ok", len(items), None, source_started)
         return mp.name, items, info, None
 
     outcomes = await asyncio.gather(*(run_one(REGISTRY[name]) for name in wanted))
@@ -196,7 +240,10 @@ async def search(
         # A single requested marketplace should report its own error (blocked,
         # rate_limited, ...) instead of a generic "no results".
         if len(wanted) == 1 and failures:
+            emit({"event": "error", "error": failures[0].code,
+                  "message": failures[0].message, "percent": 100})
             raise failures[0]
+        emit({"event": "error", "error": "no_results", "percent": 100})
         raise ExtSearchError(
             "no_results",
             "No marketplace returned items. " + (
@@ -295,6 +342,9 @@ async def search(
         notes.append("no answer: " + ", ".join(failed))
     if notes:
         result["notes"] = notes
+    emit({"event": "done", "returned": result["returned"], "percent": 100,
+          "total": total_sources, "found": progress_state["found"],
+          "elapsed_ms": int((time.monotonic() - started_at) * 1000)})
     return result
 
 

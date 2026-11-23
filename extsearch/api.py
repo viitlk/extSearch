@@ -16,6 +16,7 @@ from typing import Any, Literal
 
 try:
     from fastapi import FastAPI, HTTPException, Query
+    from fastapi.responses import StreamingResponse
     from pydantic import BaseModel, Field
 except ImportError as exc:  # pragma: no cover - depends on the install extras
     raise SystemExit(
@@ -112,6 +113,60 @@ async def search_get(
                             min_rating=min_rating, strict=strict)
     except ExtSearchError as exc:
         raise _fail(exc) from None
+
+
+
+@app.get("/search/stream")
+async def search_stream(
+    q: str = Query(..., min_length=1),
+    where: str = "all",
+    limit: int = Query(10, ge=1, le=50),
+    sort: str = "relevance",
+    min_rating: float | None = None,
+    price_min: float | None = None,
+    price_max: float | None = None,
+) -> StreamingResponse:
+    """Same search as /search, but streamed as Server-Sent Events.
+
+    Each event is one JSON line: start, source (with percent and how many items
+    were found so far), then done or error. Works with `curl -N` and EventSource.
+
+        curl -N "127.0.0.1:8000/search/stream?q=fifine&where=ua"
+    """
+    import asyncio as _asyncio
+    import json as _json
+
+    queue: _asyncio.Queue[dict[str, Any] | None] = _asyncio.Queue()
+
+    def emit(event: dict[str, Any]) -> None:
+        queue.put_nowait(event)
+
+    async def run() -> None:
+        try:
+            await search(q, where=where, limit=limit, sort=sort, min_rating=min_rating,
+                         price_min=price_min, price_max=price_max, progress=emit)
+        except ExtSearchError as exc:
+            queue.put_nowait({"event": "error", **exc.as_dict(), "percent": 100})
+        except Exception as exc:
+            queue.put_nowait({"event": "error", "error": type(exc).__name__,
+                              "message": str(exc), "percent": 100})
+        finally:
+            queue.put_nowait(None)
+
+    async def events():
+        task = _asyncio.create_task(run())
+        try:
+            while True:
+                event = await queue.get()
+                if event is None:
+                    break
+                yield f"data: {_json.dumps(event, ensure_ascii=False)}\n\n"
+        finally:
+            await task
+
+    return StreamingResponse(events(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "X-Accel-Buffering": "no"})
 
 
 @app.post("/search")
