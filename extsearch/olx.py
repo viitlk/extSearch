@@ -31,6 +31,10 @@ except ImportError:  # pragma: no cover
         "Note: plain httpx/requests gets HTTP 403 from OLX (TLS fingerprint check)."
     )
 
+from .config import JUNK_FILE
+from .errors import ExtSearchError as OlxError
+from .proxies import for_request
+
 # --------------------------------------------------------------------------
 # Constants
 # --------------------------------------------------------------------------
@@ -101,22 +105,18 @@ _BR_RE = re.compile(r"<\s*(br|/p|/div)\s*/?\s*>", re.IGNORECASE)
 # --------------------------------------------------------------------------
 
 
-from .config import JUNK_FILE
-from .errors import ExtSearchError as OlxError
-from .proxies import for_request
-
 
 # --------------------------------------------------------------------------
 # HTTP layer: throttling + cache + retry on 429
 # --------------------------------------------------------------------------
 
-_client: "cffi_requests.AsyncSession | None" = None
+_client: cffi_requests.AsyncSession | None = None
 _throttle_lock: asyncio.Lock | None = None
 _last_request_at = 0.0
 _cache: dict[str, tuple[float, dict[str, Any]]] = {}
 
 
-def _get_client() -> "cffi_requests.AsyncSession":
+def _get_client() -> cffi_requests.AsyncSession:
     """curl_cffi instead of httpx: OLX checks the TLS fingerprint (JA3/JA4),
     so plain requests/httpx gets 403 even with correct headers. impersonate is
     deliberately OFF — see the comment near HEADERS."""
@@ -181,7 +181,7 @@ async def _get_json(path: str, params: dict[str, Any] | None = None,
         try:
             return resp.json()
         except ValueError:
-            raise OlxError("bad_response", "OLX response is not JSON")
+            raise OlxError("bad_response", "OLX response is not JSON") from None
 
     raise last_err or OlxError("unknown", "could not fetch data from OLX")
 
@@ -391,7 +391,7 @@ def _as_int(value: Any, name: str) -> int | None:
     try:
         return int(value)
     except (TypeError, ValueError):
-        raise OlxError("bad_argument", f"{name} must be an integer")
+        raise OlxError("bad_argument", f"{name} must be an integer") from None
 
 
 # --------------------------------------------------------------------------
@@ -416,7 +416,8 @@ def _extract_page_state(html: str) -> dict[str, Any]:
         outer, _ = json.JSONDecoder().raw_decode(html, pos)
         state = json.loads(outer) if isinstance(outer, str) else outer
     except (ValueError, IndexError) as exc:
-        raise OlxError("no_state", f"could not parse __PRERENDERED_STATE__: {exc}")
+        raise OlxError(
+            "no_state", f"could not parse __PRERENDERED_STATE__: {exc}") from None
     if not isinstance(state, dict):
         raise OlxError("no_state", "unexpected __PRERENDERED_STATE__ format")
     return state
@@ -910,7 +911,8 @@ async def get_offer(offer_id: int, max_description_chars: int = 600,
     try:
         offer_id = int(offer_id)
     except (TypeError, ValueError):
-        raise OlxError("bad_argument", "offer_id must be an integer, e.g. 940356105")
+        raise OlxError("bad_argument",
+                       "offer_id must be an integer, e.g. 940356105") from None
 
     source = (source or "auto").lower()
     if source not in ("auto", "api", "html"):
@@ -978,7 +980,7 @@ async def get_max_pages(page_obj, base_url: str) -> int:
             if digits:
                 numbers.append(int(digits))
         return max(numbers) if numbers else 1
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         print(f"[legacy] pagination failed: {exc}", file=sys.stderr)
     return 1
 
@@ -991,14 +993,14 @@ async def parse_olx_browser(query: str, max_pages_to_scan: int = 2) -> list[dict
     attributes, while emotion classes like `css-1sw7q4x` change on every deploy.
     """
     try:
-        from playwright.async_api import async_playwright
         from bs4 import BeautifulSoup
+        from playwright.async_api import async_playwright
     except ImportError as exc:
         raise OlxError(
             "browser_unavailable",
             f"Playwright/BS4 are not installed ({exc}). Need the fallback? "
             "pip install playwright beautifulsoup4 && playwright install firefox",
-        )
+        ) from None
 
     slug = urllib.parse.quote(query.strip().replace(" ", "-"))
     base_url = f"https://www.olx.ua/uk/list/q-{slug}/"
@@ -1044,7 +1046,7 @@ async def parse_olx_browser(query: str, max_pages_to_scan: int = 2) -> list[dict
                         "date": loc_el.get_text(strip=True) if loc_el else "",
                         "link": full_url,
                     })
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 print(f"[legacy] page {pagenum}: {exc}", file=sys.stderr)
                 break
 

@@ -65,7 +65,7 @@ def money(text: str | None) -> tuple[int | None, str | None]:
         raw = head.replace(".", "") + ("." + tail if len(tail) <= 2 else tail)
     raw = re.sub(r"[^\d.]", "", raw)
     try:
-        return int(round(float(raw))), code
+        return round(float(raw)), code
     except ValueError:
         return None, code
 
@@ -274,8 +274,8 @@ async def aliexpress_search(query: str, limit: int = 10,
         npi = _ALI_NPI.search(urllib.parse.unquote(href))
         if npi:
             currency = npi.group(1)
-            old_price = int(round(float(npi.group(2))))
-            price = int(round(float(npi.group(3))))
+            old_price = round(float(npi.group(2)))
+            price = round(float(npi.group(3)))
         else:
             price_el = card.select_one(".us--price-sale, [class*='price-sale']")
             price, currency = money(price_el.get_text(" ", strip=True) if price_el else None)
@@ -564,7 +564,7 @@ async def ozon_search(query: str, limit: int = 10, page: int = 1) -> list[dict[s
     return rows[: max(limit * 2, 20)]
 
 
-def _ozon_text(nodes: Any) -> "tuple[int, str] | str":
+def _ozon_text(nodes: Any) -> tuple[int, str] | str:
     """Extract text from the Ozon atom-node tree; a price becomes (number, text)."""
     texts: list[str] = []
 

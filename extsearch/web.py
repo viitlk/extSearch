@@ -43,7 +43,7 @@ _HEADERS = {
     "Accept-Language": "uk-UA,uk;q=0.9,en;q=0.8,ru;q=0.7",
 }
 
-_client: "creq.AsyncSession | None" = None
+_client: creq.AsyncSession | None = None
 _lock: asyncio.Lock | None = None
 _last = 0.0
 _cache: dict[str, tuple[float, Any]] = {}
@@ -54,7 +54,7 @@ _JUNK_RE = re.compile(r"^\s*(cookie|підписатися|подписатьс�
                       re.IGNORECASE)
 
 
-def _session() -> "creq.AsyncSession":
+def _session() -> creq.AsyncSession:
     global _client
     if _client is None:
         _client = creq.AsyncSession(impersonate="chrome", timeout=TIMEOUT,
@@ -233,7 +233,7 @@ def _decode_bing_href(href: str) -> str:
         payload = raw[2:]
         payload += "=" * (-len(payload) % 4)
         return base64.urlsafe_b64decode(payload).decode("utf-8", "ignore") or href
-    except Exception:  # noqa: BLE001
+    except Exception:
         return href
 
 

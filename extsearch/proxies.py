@@ -18,7 +18,7 @@ import os
 import re
 import time
 import urllib.parse
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 SCHEMES = ("http", "https", "socks4", "socks4a", "socks5", "socks5h")
 _SPLIT_RE = re.compile(r"[\s,;]+")

@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from . import Marketplace, register
-from .adapters import (aliexpress_get, aliexpress_search, css_search,
-                       rows_search, simple_get)
+from .adapters import aliexpress_get, aliexpress_search, css_search, rows_search, simple_get
 
 register(Marketplace(
     name="aliexpress", title="AliExpress", country="global", currency="USD",

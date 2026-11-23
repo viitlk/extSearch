@@ -14,8 +14,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 
-from .catalog import (_fetch, _finish, _int_from, _price_from_text, _relevance,
-                      _remember)
+from .catalog import _fetch, _finish, _int_from, _price_from_text, _relevance, _remember
 from .errors import ExtSearchError as OlxError
 
 _SPACES = re.compile(r"[ \t\u00a0\u202f]+")

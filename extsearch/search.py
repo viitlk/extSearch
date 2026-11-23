@@ -157,7 +157,7 @@ async def search(
             if exc.hint:
                 info["hint"] = exc.hint
             return mp.name, [], info, exc
-        except Exception as exc:  # noqa: BLE001 — one marketplace must not break the search
+        except Exception as exc:
             err = ExtSearchError(type(exc).__name__, f"{mp.name}: {exc}",
                                  source=mp.name, country=mp.country)
             return mp.name, [], {"returned": 0, "error": type(exc).__name__}, err
@@ -334,7 +334,7 @@ async def _attach_details(rows: list[dict[str, Any]], count: int) -> None:
             except ExtSearchError as exc:
                 row["details_error"] = exc.code
                 return
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 row["details_error"] = type(exc).__name__
                 return
         for key in ("delivery", "payment", "reviews", "free_shipping_from"):
