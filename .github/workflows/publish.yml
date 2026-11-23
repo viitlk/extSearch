@@ -43,3 +43,6 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # A manual run for an already published version should not fail.
+          skip-existing: true
