@@ -24,13 +24,13 @@ from .config import CACHE_TTL, MAX_BODY, MIN_INTERVAL, TIMEOUT
 from .errors import ExtSearchError
 from .proxies import POOL, for_request
 
-_sessions: dict[str | None, "cffi.AsyncSession"] = {}
+_sessions: dict[str | None, cffi.AsyncSession] = {}
 _lock: asyncio.Lock | None = None
 _last = 0.0
 _cache: dict[str, tuple[float, Any]] = {}
 
 
-def session(profile: str | None = None) -> "cffi.AsyncSession":
+def session(profile: str | None = None) -> cffi.AsyncSession:
     if profile not in _sessions:
         kwargs: dict[str, Any] = {"timeout": TIMEOUT}
         if profile:
@@ -104,7 +104,7 @@ async def fetch(
             resp = await sess.get(url, params=params, headers=auth,
                                   proxies=proxies,
                                   timeout=timeout or TIMEOUT)
-        except Exception as exc:  # noqa: BLE001 — curl_cffi raises its own errors
+        except Exception as exc:
             last_err = ExtSearchError(
                 "network", f"{host}: network error ({type(exc).__name__}: {exc})",
                 source=source)

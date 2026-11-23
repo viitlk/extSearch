@@ -27,7 +27,8 @@ except ImportError:  # pragma: no cover - mcp 1.x
         ) from None
 
 from .errors import ExtSearchError
-from .media import FREELANCE_BOARDS, freelance_search as _freelance
+from .media import FREELANCE_BOARDS
+from .media import freelance_search as _freelance
 from .media import mod_search as _mods
 from .media import video_search as _video
 from .proxies import get_pool, set_proxies
@@ -238,17 +239,28 @@ async def freelance_search(query: str, boards: str = "all", limit: int = 10) -> 
 
 
 def main() -> None:  # pragma: no cover - entry point
-    transport = os.environ.get("EXTSEARCH_TRANSPORT", "stdio").strip().lower()
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="extsearch-mcp",
+        description="extsearch MCP server (stdio by default, or streamable HTTP)")
+    parser.add_argument("--transport", default=os.environ.get("EXTSEARCH_TRANSPORT", "stdio"),
+                        help="stdio (default), http or sse")
+    parser.add_argument("--host", default=os.environ.get("EXTSEARCH_HOST", "127.0.0.1"))
+    parser.add_argument("--port", type=int,
+                        default=int(os.environ.get("EXTSEARCH_PORT", "8765")))
+    # Clients launch the server without arguments; unknown flags must not abort it.
+    args, _ = parser.parse_known_args()
+
+    transport = args.transport.strip().lower()
     if transport in {"http", "streamable-http", "sse"}:
-        host = os.environ.get("EXTSEARCH_HOST", "127.0.0.1")
-        port = int(os.environ.get("EXTSEARCH_PORT", "8765"))
         mcp.run(transport="streamable-http" if transport == "http" else transport,
-                host=host, port=port)
+                host=args.host, port=args.port)
         return
     mcp.run()
 
 
-__all__ = ["mcp", "main", "FREELANCE_BOARDS", "get_pool"]
+__all__ = ["FREELANCE_BOARDS", "get_pool", "main", "mcp"]
 
 
 if __name__ == "__main__":  # pragma: no cover - `python -m extsearch.mcp_server`

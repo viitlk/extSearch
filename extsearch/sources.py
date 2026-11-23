@@ -37,11 +37,11 @@ FREELANCE_BOARDS = {
     "fiverr": "fiverr.com",
 }
 
-_plain: "ccreq.AsyncSession | None" = None
-_chrome: "ccreq.AsyncSession | None" = None
+_plain: ccreq.AsyncSession | None = None
+_chrome: ccreq.AsyncSession | None = None
 
 
-def _client(chrome: bool) -> "ccreq.AsyncSession":
+def _client(chrome: bool) -> ccreq.AsyncSession:
     global _plain, _chrome
     if chrome:
         if _chrome is None:
@@ -57,8 +57,8 @@ async def _get(url: str, params: dict[str, Any] | None = None, *,
     client = _client(chrome)
     try:
         resp = await client.get(url, params=params, proxies=for_request())
-    except Exception as exc:  # noqa: BLE001
-        raise OlxError("network", f"network request failed: {exc}")
+    except Exception as exc:
+        raise OlxError("network", f"network request failed: {exc}") from None
     if resp.status_code in (401, 403):
         raise OlxError("blocked", f"{urllib.parse.urlsplit(url).hostname}: 403")
     if resp.status_code == 404:
@@ -69,7 +69,7 @@ async def _get(url: str, params: dict[str, Any] | None = None, *,
         try:
             return resp.json()
         except ValueError:
-            raise OlxError("bad_response", "response is not JSON")
+            raise OlxError("bad_response", "response is not JSON") from None
     return resp.text
 
 
@@ -131,7 +131,7 @@ async def youtube_search(query: str, limit: int = 8) -> dict[str, Any]:
     try:
         data, _ = json.JSONDecoder().raw_decode(raw, idx + len(_YT_MARKER))
     except ValueError as exc:
-        raise OlxError("no_state", f"could not parse ytInitialData: {exc}")
+        raise OlxError("no_state", f"could not parse ytInitialData: {exc}") from None
 
     items: list[dict[str, Any]] = []
     _walk_video_renderers(data, items, limit)
@@ -226,7 +226,7 @@ async def curseforge_search(query: str, limit: int = 10) -> dict[str, Any]:
 
 async def freelance_search(query: str, boards: list[str] | None = None,
                            limit: int = 10, region: str | None = None) -> dict[str, Any]:
-    import web  # local import to avoid cycles
+    from . import web  # local import to avoid cycles
 
     if boards is None:
         boards = list(FREELANCE_BOARDS)

@@ -14,16 +14,16 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import platform
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-import platform
-import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from extsearch import REGISTRY, __version__, get_pool, search, select  # noqa: E402
-from extsearch.errors import ExtSearchError  # noqa: E402
+from extsearch import REGISTRY, __version__, get_pool, search, select
+from extsearch.errors import ExtSearchError
 
 # One source per country, plus one that is known to need a proxy: reporting a
 # failure is part of the proof.
@@ -71,7 +71,7 @@ async def probe(name: str, query: str, attempts: int = 2) -> dict:
             error = "no items"
         except ExtSearchError as exc:
             error = exc.code
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             error = type(exc).__name__
         if attempt + 1 < attempts:
             await asyncio.sleep(1.5)
@@ -125,7 +125,7 @@ async def main() -> int:
             print(f'  delivery options parsed: {len(delivery)}'
                   + (f' (e.g. {delivery[0]["method"]})' if delivery else ""))
             print(f'  url: {card.get("url")}')
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             print(f'\nproduct card: {first_id} -> {type(exc).__name__}: {exc}')
 
     return 0 if len(ok) * 2 >= len(results) else 1

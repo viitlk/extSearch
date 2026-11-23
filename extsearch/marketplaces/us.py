@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 from . import Marketplace, register
-from .adapters import (amazon_get, amazon_search, css_search, ebay_get,
-                       ebay_search, rows_search, simple_get)
+from .adapters import (
+                       amazon_get,
+                       amazon_search,
+                       css_search,
+                       ebay_get,
+                       ebay_search,
+                       rows_search,
+                       simple_get,
+)
 
 register(Marketplace(
     name="amazon", title="Amazon.com", country="us", currency="USD",

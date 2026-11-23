@@ -9,8 +9,9 @@ ISO 3166-1 alpha-2 codes plus the pseudo-country ``global``.
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable
+from typing import Any
 
 SearchFn = Callable[..., Awaitable[dict[str, Any]]]
 GetFn = Callable[..., Awaitable[dict[str, Any]]]

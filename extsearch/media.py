@@ -34,7 +34,7 @@ async def mod_search(query: str, where: str = "all", limit: int = 10,
 
     results = await asyncio.gather(*(coro for _, coro in tasks), return_exceptions=True)
     queues: dict[str, list[dict[str, Any]]] = {}
-    for (name, _), res in zip(tasks, results):
+    for (name, _), res in zip(tasks, results, strict=True):
         if isinstance(res, BaseException):
             out["sources"][name] = {
                 "returned": 0,

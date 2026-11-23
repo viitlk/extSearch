@@ -17,9 +17,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from extsearch import REGISTRY, ExtSearchError, parse_proxies, resolve  # noqa: E402
-from extsearch.marketplaces.adapters import money  # noqa: E402
-from extsearch.search import search, select, sources_catalog  # noqa: E402
+from extsearch import REGISTRY, ExtSearchError, freelance_search, parse_proxies, resolve
+from extsearch.marketplaces.adapters import money
+from extsearch.search import search, select, sources_catalog
 
 OFFLINE = os.environ.get("EXTSEARCH_OFFLINE") == "1"
 FAILED: list[str] = []
@@ -50,9 +50,9 @@ def test_units() -> None:
     check("money: symbol after", money("1 234,56 €") == (1235, "EUR"), str(money("1 234,56 €")))
     check("money: symbol before", money("$29.99") == (30, "USD"), str(money("$29.99")))
 
-    wanted, excluded, _ = resolve("ua")
+    wanted, _excluded, _ = resolve("ua")
     check("resolve country", "olx" in wanted and "auto" not in wanted)
-    wanted, excluded, _ = resolve("all,-ru")
+    wanted, _excluded, _ = resolve("all,-ru")
     check("resolve exclusion", "ozon" not in wanted and "olx" in wanted)
     wanted, _, _ = resolve("ozon")
     check("resolve marketplace", wanted == ["ozon"])
@@ -90,6 +90,10 @@ async def test_network() -> None:
            if "fifine" not in (row.get("title") or "").lower()]
     check("price sort: brand in title", not off,
           f"{len(off)} rows without the brand")
+
+    freel = await freelance_search("aiogram", boards="kwork", limit=2)
+    check("freelance_search", bool(freel.get("results")),
+          f'{freel.get("returned")} results via {freel.get("mode", "")[:20]}')
 
     from extsearch.web import web_get, web_search
 

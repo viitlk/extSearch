@@ -17,22 +17,31 @@ from __future__ import annotations
 
 from .config import __version__
 from .errors import ExtSearchError, OlxError
-from .marketplaces import REGISTRY, catalog, by_country, resolve
+from .marketplaces import REGISTRY, by_country, catalog, resolve
 from .media import FREELANCE_BOARDS, freelance_search, mod_search, video_search
 from .proxies import POOL, get_pool, parse_proxies, set_proxies
 from .search import search, select, sources_catalog
 from .web import web_get, web_search
 
 __all__ = [
-    "__version__",
-    # search
-    "search", "select", "sources_catalog",
-    "REGISTRY", "catalog", "by_country", "resolve",
-    # content
-    "web_search", "web_get", "video_search", "mod_search", "freelance_search",
     "FREELANCE_BOARDS",
-    # proxies
-    "set_proxies", "parse_proxies", "get_pool", "POOL",
-    # errors
-    "ExtSearchError", "OlxError",
+    "POOL",
+    "REGISTRY",
+    "ExtSearchError",
+    "OlxError",
+    "__version__",
+    "by_country",
+    "catalog",
+    "freelance_search",
+    "get_pool",
+    "mod_search",
+    "parse_proxies",
+    "resolve",
+    "search",
+    "select",
+    "set_proxies",
+    "sources_catalog",
+    "video_search",
+    "web_get",
+    "web_search",
 ]

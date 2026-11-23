@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 from . import Marketplace, register
-from .adapters import (ozon_search, rows_search, simple_get, wildberries_search,
-                       yandex_get, yandex_search)
+from .adapters import (
+                       ozon_search,
+                       rows_search,
+                       simple_get,
+                       wildberries_search,
+                       yandex_get,
+                       yandex_search,
+)
 
 register(Marketplace(
     name="yandex_market", title="Яндекс Маркет", country="ru", currency="RUB",

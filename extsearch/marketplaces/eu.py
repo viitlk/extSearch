@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from . import Marketplace, register
-from .adapters import (amazon_get, amazon_search, css_search, olx_adapter,
-                       rows_search, simple_get)
+from .adapters import amazon_get, amazon_search, css_search, olx_adapter, rows_search, simple_get
 
 # --- OLX: same code, different domain ---------------------------------------
 

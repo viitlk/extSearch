@@ -33,9 +33,9 @@ TIMEOUT = 30.0
 MIN_INTERVAL = 0.5
 CACHE_TTL = 300
 
-_plain: "ccreq.AsyncSession | None" = None
-_chrome: "ccreq.AsyncSession | None" = None
-_safari: "ccreq.AsyncSession | None" = None
+_plain: ccreq.AsyncSession | None = None
+_chrome: ccreq.AsyncSession | None = None
+_safari: ccreq.AsyncSession | None = None
 _lock: asyncio.Lock | None = None
 _last = 0.0
 _cache: dict[str, tuple[float, Any]] = {}
@@ -47,7 +47,7 @@ _URLS: dict[tuple[str, int], str] = {}
 _ROWS: dict[tuple[str, int], dict[str, Any]] = {}
 
 
-def _client(chrome: bool) -> "ccreq.AsyncSession":
+def _client(chrome: bool) -> ccreq.AsyncSession:
     global _plain, _chrome
     if chrome:
         if _chrome is None:
@@ -58,7 +58,7 @@ def _client(chrome: bool) -> "ccreq.AsyncSession":
     return _plain
 
 
-def _safari_client() -> "ccreq.AsyncSession":
+def _safari_client() -> ccreq.AsyncSession:
     """Fallback TLS profile.
 
     Comfy (and sometimes other Cloudflare sites) started answering 403 to the
@@ -532,7 +532,7 @@ async def rozetka_search(query: str, limit: int = 10, page: int = 1,
             "browser_unavailable",
             f"Playwright is not available ({exc}). Install the browser "
             "extra: pip install playwright && playwright install chromium",
-        )
+        ) from None
 
     import os
     from pathlib import Path
@@ -567,13 +567,13 @@ async def rozetka_search(query: str, limit: int = 10, page: int = 1,
                 await ctx.close()
     except OlxError:
         raise
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         # Playwright raises its own Error when the browser is not installed.
         raise OlxError(
             "browser_unavailable",
             f"browser engine is unavailable ({exc}). "
             "Run: python -m playwright install chromium",
-        )
+        ) from None
 
     ids: list[int] = []
     for m in re.finditer(r"/(\d{6,10})/p\d{6,10}/", html):
@@ -587,7 +587,7 @@ async def rozetka_search(query: str, limit: int = 10, page: int = 1,
             "Rozetka returned a page without products — the Cloudflare challenge was not passed. "
             "Run tools/warmup_rozetka.py once from a desktop terminal: a window "
             "opens, pass the challenge, and the cookies stay in the profile.",
-        )
+        ) from None
 
     rows: list[dict[str, Any]] = []
     for gid in ids[:limit]:

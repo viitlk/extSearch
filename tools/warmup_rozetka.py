@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from extsearch.config import PROFILE_DIR  # noqa: E402
+from extsearch.config import PROFILE_DIR
 
 URL = "https://rozetka.com.ua/ua/"
 TIMEOUT_SEC = 180
@@ -44,7 +44,7 @@ async def main() -> int:
         page = ctx.pages[0] if ctx.pages else await ctx.new_page()
         try:
             await page.goto(URL, wait_until="domcontentloaded", timeout=60000)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             print(f"could not open the page: {exc}")
 
         print(f"waiting for the challenge (up to {TIMEOUT_SEC}s). "
