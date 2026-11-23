@@ -114,6 +114,13 @@ pip install "extsearch[api]"        # + HTTP API (extsearch-api)
 pip install "extsearch[all]"        # everything
 ```
 
+No access to PyPI? Every [release](https://github.com/viitlk/extSearch/releases) carries
+the wheel; install it directly:
+
+```bash
+pip install ./extsearch-2.0.2-py3-none-any.whl
+```
+
 From source, for development:
 
 ```bash
@@ -294,6 +301,7 @@ extsearch api --port 8000          # HTTP API
 
 ```bash
 extsearch-api --host 127.0.0.1 --port 8000
+python -m extsearch.api --port 8000      # same thing, module entry point
 ```
 
 OpenAPI docs and a try-it form: <http://127.0.0.1:8000/docs>
@@ -327,7 +335,8 @@ no_results, `409` no_url, `429` rate_limited, `501` unavailable, `502` blocked,
 ## MCP server
 
 ```bash
-extsearch-mcp                                    # stdio (default)
+extsearch-mcp                                        # stdio (default)
+python -m extsearch.mcp_server                       # same, module entry point
 EXTSEARCH_TRANSPORT=http extsearch-mcp --port 8765   # streamable HTTP
 ```
 

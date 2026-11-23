@@ -249,3 +249,7 @@ def main() -> None:  # pragma: no cover - entry point
 
 
 __all__ = ["mcp", "main", "FREELANCE_BOARDS", "get_pool"]
+
+
+if __name__ == "__main__":  # pragma: no cover - `python -m extsearch.mcp_server`
+    main()

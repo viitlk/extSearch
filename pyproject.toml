@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "extsearch"
-version = "2.0.1"
+version = "2.0.2"
 description = "Product search across marketplaces of many countries: library, MCP server and HTTP API"
 requires-python = ">=3.10"
 readme = "README.md"
