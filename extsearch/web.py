@@ -44,6 +44,7 @@ _HEADERS = {
 }
 
 _client: creq.AsyncSession | None = None
+_plain: creq.AsyncSession | None = None
 _lock: asyncio.Lock | None = None
 _last = 0.0
 _cache: dict[str, tuple[float, Any]] = {}
@@ -60,6 +61,18 @@ def _session() -> creq.AsyncSession:
         _client = creq.AsyncSession(impersonate="chrome", timeout=TIMEOUT,
                                     headers=_HEADERS)
     return _client
+
+def _plain_session() -> creq.AsyncSession:
+    """Fallback without a browser fingerprint.
+
+    Some sites answer 403 to an impersonated Chrome from a datacenter IP while
+    the bare libcurl client passes — the opposite of what most sites do, so the
+    retry has to exist in both directions.
+    """
+    global _plain
+    if _plain is None:
+        _plain = creq.AsyncSession(timeout=TIMEOUT, headers=_HEADERS)
+    return _plain
 
 
 async def _throttle() -> None:
@@ -90,6 +103,17 @@ async def _fetch(url: str, params: dict[str, Any] | None = None, *,
             last_err = OlxError("network", f"network request failed: {exc}")
             await asyncio.sleep(1.5 * (attempt + 1))
             continue
+
+        if resp.status_code in (401, 403) and client is _session():
+            # One attempt as plain libcurl before giving up on the URL.
+            await _throttle()
+            try:
+                resp = await _plain_session().get(url, params=params,
+                                                  proxies=for_request())
+            except RequestException as exc:
+                last_err = OlxError("network", f"network request failed: {exc}")
+                await asyncio.sleep(1.5 * (attempt + 1))
+                continue
 
         if resp.status_code in (202, 429):
             last_err = OlxError("rate_limited", "search engine asked us to slow down")

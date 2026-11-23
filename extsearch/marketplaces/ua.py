@@ -57,7 +57,7 @@ def _extra_get(name: str):
 _UA_STORES = [
     ("prom", "Prom.ua", "seller marketplace"),
     ("foxtrot", "Foxtrot", "electronics and home appliances"),
-    ("rozetka", "Rozetka", "search needs a warmed browser profile"),
+    ("rozetka", "Rozetka", "search needs a headful browser session; cards work via API"),
     ("comfy", "Comfy", "electronics"),
     ("allo", "Allo", "electronics"),
     ("moyo", "Moyo", "electronics"),
@@ -76,7 +76,9 @@ for _name, _title, _note in _UA_STORES:
     register(Marketplace(
         name=_name, title=_title, country="ua",
         currency="USD" if _name == "auto" else "UAH",
-        default=_name != "auto",
+        # auto: different vertical. rozetka: search needs a headful browser
+        # session (Cloudflare), so it never runs in a country-wide sweep.
+        default=_name not in ("auto", "rozetka"),
         search=(_extra_search(_name) if _is_extra else _catalog_search(_name)),
         get=(_extra_get(_name) if _is_extra else _catalog_get(_name)),
         note=_note,

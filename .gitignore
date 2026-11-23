@@ -20,3 +20,9 @@ logs/
 .pytest_cache/
 .ruff_cache/
 .cache/
+
+# Browser profiles are session credentials (Cloudflare clearance cookies live there).
+# Never commit them: they are IP-bound, short-lived and useless to anyone else.
+*-profile*/
+rz-profile/
+browser-profile/

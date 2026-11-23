@@ -35,6 +35,34 @@ def _print(data: Any, as_json: bool) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+
+def _progress_printer():
+    """One live line: bar, percent, sources done, items found."""
+    width = 24
+
+    def callback(event: dict) -> None:
+        kind = event.get("event")
+        if kind == "start":
+            print(f'searching {event["total"]} marketplaces...', file=sys.stderr)
+            return
+        if kind == "source":
+            filled = int(width * event["percent"] / 100)
+            bar = "#" * filled + "-" * (width - filled)
+            mark = "ok" if event["status"] == "ok" else event.get("error", "error")
+            sys.stderr.write(
+                f'\r[{bar}] {event["percent"]:>3}%  {event["done"]}/{event["total"]}  '
+                f'found {event["found"]:<4} {event["source"]}:{mark}'.ljust(78))
+            sys.stderr.flush()
+            return
+        if kind in ("done", "error"):
+            sys.stderr.write("\n")
+            if kind == "error":
+                sys.stderr.write(f'error: {event.get("error")}\n')
+            sys.stderr.flush()
+
+    return callback
+
+
 def _money(value: Any, currency: Any) -> str:
     if value is None:
         return "—"
@@ -92,6 +120,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--proxy", action="append", default=[],
                    help="TYPE://IP:PORT, repeatable")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--progress", action="store_true",
+                   help="live progress bar on stderr")
 
     p = sub.add_parser("select", help="product card by id")
     p.add_argument("item_id")
@@ -176,6 +206,7 @@ def run(argv: list[str] | None = None) -> int:
                 min_rating=args.min_rating, strict=args.strict, junk_filter=args.junk,
                 details=args.details, per_source_limit=args.per_source,
                 free_only=args.free, include_urls=True,
+                progress=_progress_printer() if args.progress else None,
             ))
             if args.json:
                 _print(result, True)

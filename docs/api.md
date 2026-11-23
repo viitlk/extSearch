@@ -19,6 +19,7 @@ Interactive docs: `GET /docs`. Raw schema: `GET /openapi.json`.
 | GET | `/health` | status, version, proxy count |
 | GET | `/sources` | countries, marketplaces, flags |
 | GET | `/search` | search with query-string parameters |
+| GET | `/search/stream` | same search, streamed as Server-Sent Events with progress |
 | POST | `/search` | search with a JSON body |
 | GET | `/item/{item_id}` | product card |
 | GET | `/proxies` | current pool state |
@@ -84,6 +85,31 @@ curl "127.0.0.1:8000/search?q=iphone%2015&where=ua,pl&sort=cheapest&min_rating=4
 | `strict` | `false` | title must contain a query word |
 
 Fixed on this route: `junk_filter` auto, `details=0`, `include_urls=true`.
+
+
+## `GET /search/stream`
+
+Same parameters as `/search`, but the response is `text/event-stream`: one JSON
+event per line while marketplaces finish, so a UI can show a real progress bar.
+
+```bash
+curl -N -G 127.0.0.1:8000/search/stream \
+  --data-urlencode "q=навушники" \
+  --data-urlencode "where=comfy,brain,ctrs"
+```
+
+```text
+data: {"event": "start", "query": "навушники", "sources": ["comfy", "brain", "ctrs"], "total": 3, "percent": 0}
+
+data: {"event": "source", "source": "brain", "status": "ok", "returned": 10, "found": 10, "done": 1, "total": 3, "percent": 33, "elapsed_ms": 1630}
+
+data: {"event": "source", "source": "comfy", "status": "ok", "returned": 10, "found": 20, "done": 2, "total": 3, "percent": 67, "elapsed_ms": 2167}
+
+data: {"event": "done", "returned": 10, "percent": 100, "found": 30, "elapsed_ms": 3120}
+```
+
+`error` events carry the usual payload (`error`, `message`, `hint`). In JavaScript
+`new EventSource("/search/stream?q=...")` works without extra libraries.
 
 ## `POST /search`
 

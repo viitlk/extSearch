@@ -164,7 +164,7 @@ async def _get_json(path: str, params: dict[str, Any] | None = None,
             continue
         if resp.status_code == 404:
             raise OlxError("not_found", "listing not found or removed")
-        if resp.status_code in (401, 403):
+        if resp.status_code in (401, 403, 423):
             raise OlxError(
                 "blocked",
                 "OLX blocked the request (HTTP 401/403). A browser User-Agent "
@@ -208,7 +208,7 @@ async def _get_text(url: str, params: dict[str, Any] | None = None,
             continue
         if resp.status_code == 404:
             raise OlxError("not_found", "page not found (listing removed?)")
-        if resp.status_code in (401, 403):
+        if resp.status_code in (401, 403, 423):
             raise OlxError("blocked", "OLX blocked the HTML page (HTTP 401/403)")
         if resp.status_code >= 500:
             last_err = OlxError("server_error", f"OLX returned HTTP {resp.status_code}")

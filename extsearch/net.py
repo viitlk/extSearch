@@ -115,7 +115,8 @@ async def fetch(
             continue
 
         status = resp.status_code
-        if status in (401, 403, 407, 429, 444, 503):
+        # 423 (Locked) is what some marketplaces return to a burned proxy.
+        if status in (401, 403, 407, 423, 429, 444, 503):
             if chosen:
                 POOL.mark_bad(chosen)
                 chosen = None
